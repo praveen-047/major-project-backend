@@ -17,9 +17,13 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: [
+    "http://localhost:3000",
+    "https://major-project-frontend-cyan.vercel.app"
+  ],
   credentials: true,
 }));
+
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use(cookieParser());
@@ -40,7 +44,7 @@ mongoose.connect(process.env.MONGO_URI, {
 // create HTTP + socket.io server BEFORE mounting routes that need io
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "http://localhost:3000", methods: ["GET", "POST"], credentials: true },
+  cors: { origin: "https://major-project-frontend-cyan.vercel.app", methods: ["GET", "POST"], credentials: true },
 });
 
 // give other modules (routes) access to io by requiring a factory (see fileRoutes below)
