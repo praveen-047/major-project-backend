@@ -7,9 +7,31 @@ const User = require("../models/User");
 const router = express.Router();
 
 // Middleware: try Authorization header or cookie
+// const authMiddleware = (req, res, next) => {
+//   const token = req.headers['authorization'] || req.cookies?.jwt_token;
+//   if (!token) return res.status(401).json({ error_msg: "No token provided" });
+
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     req.userId = decoded.id;
+//     next();
+//   } catch (err) {
+//     return res.status(401).json({ error_msg: "Invalid token" });
+//   }
+// };
+
 const authMiddleware = (req, res, next) => {
-  const token = req.headers['authorization'] || req.cookies?.jwt_token;
-  if (!token) return res.status(401).json({ error_msg: "No token provided" });
+  // FIRST try cookie
+  let token = req.cookies?.jwt_token;
+
+  // THEN try Authorization header
+  if (!token && req.headers.authorization) {
+    token = req.headers.authorization.replace("Bearer ", "");
+  }
+
+  if (!token) {
+    return res.status(401).json({ error_msg: "No token provided" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -19,6 +41,7 @@ const authMiddleware = (req, res, next) => {
     return res.status(401).json({ error_msg: "Invalid token" });
   }
 };
+
 
 // GET /api/auth/me
 router.get("/me", authMiddleware, async (req, res) => {
@@ -65,11 +88,11 @@ router.post("/login", async (req, res) => {
 
     // Set cookie (httpOnly, secure only on production)
     res.cookie("jwt_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+});
+
 
     // return user (no password)
     const safeUser = {
