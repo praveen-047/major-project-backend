@@ -16,14 +16,23 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://major-project-frontend-cyan.vercel.app"
-  ],
-  credentials: true,
-}));
-app.options("/*", cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://major-project-frontend-cyan.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+// required so browser includes cookies
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 
 
 app.use(express.json({ limit: "20mb" }));
